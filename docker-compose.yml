@@ -1,16 +1,5 @@
 version: "3.8"
 
-volumes:
-  loki-data:
-    driver: local
-    driver_opts:
-      type: cifs
-      device: "${CIFS_SHARED_FOLDER_PATH}/loki"
-      o: "username=${CIFS_USERNAME},password=${CIFS_PASSWORD},rw,vers=3.0"
-
-  grafana-data:
-    driver: local
-
 services:
   loki:
     image: grafana/loki:latest
@@ -20,7 +9,7 @@ services:
     command: -config.file=/etc/loki/loki-config.yaml
     volumes:
       - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
-      - loki-data:/loki
+      - /share/nas_data/loki:/loki
     restart: unless-stopped
 
   grafana:
@@ -30,7 +19,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana-data:/var/lib/grafana
+      - /share/nas_data/grafana:/var/lib/grafana
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
