@@ -21,10 +21,9 @@ services:
     container_name: loki
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/loki-config.yaml
+    command: -config.file=/loki/loki-config.yaml
     volumes:
       - loki-data:/loki
-      - /share/share_data/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
     restart: unless-stopped
 
   grafana:
