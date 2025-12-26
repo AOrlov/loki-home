@@ -1,0 +1,62 @@
+version: "3.8"
+
+volumes:
+  loki-data:
+    driver: local
+    driver_opts:
+      type: cifs
+      device: "${CIFS_SHARED_FOLDER_PATH}/loki"
+      o: "username=${CIFS_USERNAME},password=${CIFS_PASSWORD},rw,vers=3.0,iocharset=utf8,nofail"
+
+  grafana-data:
+    driver: local
+    driver_opts:
+      type: cifs
+      device: "${CIFS_SHARED_FOLDER_PATH}/grafana"
+      o: "username=${CIFS_USERNAME},password=${CIFS_PASSWORD},rw,vers=3.0,iocharset=utf8,nofail"
+
+services:
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - loki-data:/loki
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_FEATURE_TOGGLES_ENABLE=alertingSimplifiedRouting,alertingQueryAndExpressionsStepMode
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<'EOF' > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+          - name: Loki
+            type: loki
+            access: proxy
+            url: http://${HOST_LAN_IP}:3100
+            basicAuth: false
+            isDefault: true
+            version: 1
+            editable: false
+        EOF
+        /run.sh
+    depends_on:
+      - loki
+    restart: unless-stopped
