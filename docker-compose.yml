@@ -24,7 +24,7 @@ services:
     command: -config.file=/etc/loki/loki-config.yaml
     volumes:
       - loki-data:/loki
-      - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - /share/share_data/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
     restart: unless-stopped
 
   grafana:
