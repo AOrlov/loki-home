@@ -10,10 +10,6 @@ volumes:
 
   grafana-data:
     driver: local
-    driver_opts:
-      type: cifs
-      device: "${CIFS_SHARED_FOLDER_PATH}/grafana"
-      o: "username=${CIFS_USERNAME},password=${CIFS_PASSWORD},rw,vers=3.0,uid=472,gid=472,file_mode=0660,dir_mode=0770,noperm"
 
 services:
   loki:
